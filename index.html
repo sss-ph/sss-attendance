@@ -890,7 +890,7 @@ async function doWriteLog(dateTimeStr, logId, todayStr, forceWrite){
   const logTypeTh = logType === 'IN' ? 'เข้างาน' : 'ออกงาน';
   showToast(`✓ บันทึกสำเร็จ · ${selectedEmp.name} · ${logTypeTh}`, 'success');
   isSubmitting = false; updateSubmitBtn();
-  setTimeout(() => { clearEmployee(); retakePhoto(); setLogType('IN'); }, 1800);
+  setTimeout(() => { clearEmployee(); retakePhoto(); }, 1800);
 
   // background: อัปเดต GPS + รูปจริง
   const {lat, lng} = gpsResult;
