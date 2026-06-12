@@ -13,17 +13,21 @@
   --font:'IBM Plex Sans Thai',sans-serif; --mono:'IBM Plex Mono',monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;}
+html,body{height:100%;margin:0;padding:0;}
 body{
   font-family:var(--font);background:var(--bg);color:var(--text);
-  display:grid;grid-template-rows:auto 1fr;min-height:100vh;
+  min-height:100vh;
+  display:flex;flex-direction:column;
 }
 
 /* ── TOP BAR ── */
 .topbar{
   display:flex;align-items:center;justify-content:space-between;
   padding:8px 28px;border-bottom:1px solid var(--border);
-  background:var(--surface);position:sticky;top:0;z-index:10;min-height:0;
+  background:var(--surface);
+  position:sticky;top:0;z-index:100;
+  flex-shrink:0;
+  width:100%;box-sizing:border-box;
 }
 .topbar-left{display:flex;align-items:center;gap:14px;}
 .branch-badge{
@@ -67,28 +71,51 @@ body{
 @media(max-width:600px){
   .topbar{
     padding:6px 12px;
-    gap:6px;
-    /* ดันพื้นหลังลงมาด้วย padding-bottom */
-    padding-bottom:18px;
-    /* ทำให้ขอบล่างโค้ง */
-    border-radius:0 0 18px 18px;
-    /* ป้องกัน content ด้านล่างทับ */
-    margin-bottom:-10px;
+    flex-wrap:wrap;
+    gap:0;
+    row-gap:2px;
   }
-  .sys-title{ display:none; }
-  .date-str{  display:none; }
-  .branch-badge{ display:none; }
+  /* แถวบน: logo + ชื่อสาขา + ชื่อระบบ */
+  .topbar-left{
+    flex:1;
+    min-width:0;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:0;
+  }
+  .branch-badge{
+    font-size:13px !important;
+    display:block !important;
+  }
+  .sys-title{
+    display:block !important;
+    font-size:10px;
+    color:var(--text2);
+  }
   #companyLogo{
-    height:36px !important;
-    width:36px !important;
+    height:30px !important;
+    width:30px !important;
+  }
+  /* แถวขวา: นาฬิกา + วันที่ + ปุ่ม */
+  .topbar-right{
+    flex-direction:column;
+    align-items:flex-end;
+    gap:2px;
   }
   .clock{ font-size:14px; }
-  .btn-register-top{
-    font-size:12px;
-    padding:7px 10px;
+  .date-str{
+    display:block !important;
+    font-size:10px;
+    color:var(--text2);
   }
+  .btn-register-top{
+    font-size:11px;
+    padding:5px 8px;
+  }
+  .reg-text{ display:none; }
   .main{
-    padding:28px 14px 24px; /* top เพิ่มจาก 24px → 28px */
+    padding:14px 12px 24px;
+    flex:1;
   }
 }
 
@@ -102,6 +129,7 @@ body{
   display:grid;grid-template-columns:1fr 1fr;gap:0;
   max-width:1200px;width:100%;margin:0 auto;padding:24px 28px;
   align-items:start;gap:20px;
+  flex:1;
 }
 @media(max-width:860px){.main{grid-template-columns:1fr;}}
 
@@ -228,6 +256,36 @@ body{
 .btn-submit:disabled{opacity:.3;cursor:not-allowed;}
 .btn-submit:not(:disabled):hover{filter:brightness(1.08);transform:translateY(-1px);}
 .btn-submit:not(:disabled):active{transform:translateY(0);}
+
+/* ── UPLOAD STATUS BAR ── */
+#uploadStatusBar{
+  position:fixed;bottom:0;left:0;right:0;
+  display:flex;flex-direction:column;gap:0;
+  z-index:500;pointer-events:none;
+}
+.upload-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 18px;font-size:12px;
+  border-top:1px solid rgba(255,255,255,.06);
+  background:rgba(15,17,23,.92);
+  backdrop-filter:blur(4px);
+  transition:opacity .4s,max-height .4s;
+  max-height:48px;overflow:hidden;
+}
+.upload-item.done{ opacity:0;max-height:0;padding:0 18px; }
+.upload-dot{
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+}
+.upload-dot.uploading{
+  background:var(--accent);
+  animation:pulse 1.2s ease-in-out infinite;
+}
+.upload-dot.success{ background:var(--accent2); }
+.upload-dot.fail{ background:var(--danger); }
+.upload-name{ font-weight:500;color:var(--text); }
+.upload-status{ color:var(--text2);flex:1; }
+.upload-status.success{ color:var(--accent2); }
+.upload-status.fail{ color:var(--danger); }
 
 /* ── TOAST ── */
 .toast{
@@ -363,7 +421,19 @@ const CONFIG = {
       </div>
     </div>
 
-  </div>
+    <div class="card">
+      <div class="card-label">หมายเหตุ (ถ้ามี)</div>
+      <textarea
+        id="noteInput"
+        placeholder="เช่น มาสาย เนื่องจากรถติด / OT / ลากิจ ฯลฯ"
+        oninput="currentNote=this.value.trim()"
+        style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;resize:vertical;min-height:60px;max-height:120px;line-height:1.5;transition:border-color .15s;"
+        onfocus="this.style.borderColor='var(--accent)'"
+        onblur="this.style.borderColor='var(--border)'"
+      ></textarea>
+    </div>
+
+  </div><!-- end col-left -->
 
   <div class="col-right">
     <div class="card">
@@ -543,9 +613,45 @@ const CONFIG = {
   </div>
 </div>
 
+<div id="uploadStatusBar"></div>
+
 <script>
 // ─────────────────────────────────────────────────────────────
-// STATE
+// UPLOAD STATUS TRACKER
+// ─────────────────────────────────────────────────────────────
+const uploadTracker = {};
+
+function addUploadStatus(logId, empName, logTypeTh){
+  const bar = document.getElementById('uploadStatusBar');
+  const el = document.createElement('div');
+  el.className = 'upload-item';
+  el.id = 'upload-' + logId;
+  el.innerHTML =
+    '<span class="upload-dot uploading"></span>' +
+    '<span class="upload-name">' + escapeHtml(empName) + '</span>' +
+    '<span class="upload-status" id="upload-status-' + logId + '">กำลังอัพโหลดรูป ' + logTypeTh + '...</span>';
+  bar.appendChild(el);
+}
+
+function updateUploadStatus(logId, type, msg){
+  const el = document.getElementById('upload-' + logId);
+  if(!el) return;
+  const dot = el.querySelector('.upload-dot');
+  const statusEl = el.querySelector('.upload-status');
+  dot.className = 'upload-dot ' + type;
+  statusEl.className = 'upload-status ' + type;
+  statusEl.textContent = msg;
+  const delay = (type === 'success') ? 2500 : 5000;
+  setTimeout(()=>{
+    el.classList.add('done');
+    setTimeout(()=>{ el.remove(); }, 450);
+  }, delay);
+}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 // ─────────────────────────────────────────────────────────────
 let locations        = [];   // [{id, name}]
 let employees        = [];   // full list loaded once
@@ -558,6 +664,7 @@ let regStream        = null;
 let regPhotoUrl      = null;
 let isSubmitting     = false;
 let pendingSubmitData = null;
+let currentNote      = '';  // หมายเหตุที่พิมพ์ไว้
 
 // ─────────────────────────────────────────────────────────────
 // CLOCK
@@ -579,6 +686,9 @@ function init(){
     showToast('กรุณาใส่ GAS_URL ในตัวแปร CONFIG ก่อนใช้งาน','error');
     return;
   }
+  // ขอสิทธิ์ GPS + กล้องทันทีตั้งแต่เปิดหน้า ไม่รอกดปุ่ม
+  startGPS();
+  startCamera();
   loadLocations();
   loadEmployees();
 }
@@ -612,23 +722,56 @@ async function uploadPhotoToDrive(dataUrl, filename){
 }
 
 // ─────────────────────────────────────────────────────────────
-// GPS WITH CACHING (ไม่ขอซ้ำถ้าไม่จำเป็น)
+// GPS WITH CACHING — ขอตั้งแต่เปิดหน้า, ไม่ขอซ้ำถ้าไม่เกิน 5 นาที
+// cache เก็บใน sessionStorage ด้วย เพื่อรอดระหว่าง soft reload
 // ─────────────────────────────────────────────────────────────
-let cachedGPS = null; // { lat, lng, ts }
+const GPS_TTL = 5 * 60 * 1000; // 5 นาที
+
+let cachedGPS = (function(){
+  try {
+    const s = sessionStorage.getItem('gps_cache');
+    if (s) { const p = JSON.parse(s); if (Date.now() - p.ts < GPS_TTL) return p; }
+  } catch(e){}
+  return null;
+})();
+
+let gpsWatchId = null;
+
+function saveGPS(lat, lng) {
+  cachedGPS = {lat, lng, ts: Date.now()};
+  try { sessionStorage.setItem('gps_cache', JSON.stringify(cachedGPS)); } catch(e){}
+}
+
+function startGPS(){
+  if(!navigator.geolocation) return;
+  // ถ้า cache ยังสด ไม่ต้องขอใหม่
+  if(cachedGPS && (Date.now() - cachedGPS.ts < GPS_TTL)) return;
+  // ขอครั้งแรก
+  navigator.geolocation.getCurrentPosition(
+    pos => saveGPS(pos.coords.latitude, pos.coords.longitude),
+    () => {},
+    {timeout: 8000, maximumAge: GPS_TTL}
+  );
+  // watch ต่อเนื่อง — browser ไม่ popup ซ้ำหากให้สิทธิ์แล้ว
+  if(!gpsWatchId){
+    gpsWatchId = navigator.geolocation.watchPosition(
+      pos => saveGPS(pos.coords.latitude, pos.coords.longitude),
+      () => {},
+      {enableHighAccuracy: false, maximumAge: GPS_TTL, timeout: 10000}
+    );
+  }
+}
 
 async function getGPS(){
-  if(cachedGPS && (Date.now()-cachedGPS.ts < 5*60*1000)){
-    return {lat:cachedGPS.lat, lng:cachedGPS.lng};
+  if(cachedGPS && (Date.now() - cachedGPS.ts < GPS_TTL)){
+    return {lat: cachedGPS.lat, lng: cachedGPS.lng};
   }
-  return new Promise(resolve=>{
-    if(!navigator.geolocation) return resolve({lat:'',lng:''});
+  return new Promise(resolve => {
+    if(!navigator.geolocation) return resolve({lat:'', lng:''});
     navigator.geolocation.getCurrentPosition(
-      pos=>{
-        cachedGPS={lat:pos.coords.latitude, lng:pos.coords.longitude, ts:Date.now()};
-        resolve({lat:cachedGPS.lat, lng:cachedGPS.lng});
-      },
-      ()=>resolve({lat:'',lng:''}),
-      {timeout:3000} // ← ลดจาก 10000 → 3000
+      pos => { saveGPS(pos.coords.latitude, pos.coords.longitude); resolve({lat: cachedGPS.lat, lng: cachedGPS.lng}); },
+      () => resolve({lat:'', lng:''}),
+      {timeout: 5000, maximumAge: GPS_TTL}
     );
   });
 }
@@ -733,6 +876,12 @@ function clearEmployee(){
   document.getElementById('empSearch').value='';
   renderEmployees();
   updateSubmitBtn();
+}
+
+function clearNote(){
+  currentNote = '';
+  const el = document.getElementById('noteInput');
+  if(el) el.value = '';
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -874,7 +1023,8 @@ async function doWriteLog(dateTimeStr, logId, todayStr, forceWrite){
       logType,
       dateTime:  dateTimeStr,
       lat: '', lng: '',   // GPS ใส่หลัง (background update ทีหลังได้)
-      photoUrl:  '',      // ไม่ส่ง base64 ไปเลย
+      photoUrl:  '',      // รูปอัพโหลด background
+      note:      currentNote || '',
     }),
   ]);
 
@@ -888,16 +1038,27 @@ async function doWriteLog(dateTimeStr, logId, todayStr, forceWrite){
   }
 
   const logTypeTh = logType === 'IN' ? 'เข้างาน' : 'ออกงาน';
-  showToast(`✓ บันทึกสำเร็จ · ${selectedEmp.name} · ${logTypeTh}`, 'success');
+  const empNameSnap = selectedEmp.name;
+  const photoSnap   = photoDataUrl;
+  const {lat, lng}  = gpsResult;
+
+  // ปล่อย UI ทันทีให้คนต่อไปใช้ได้ — ไม่รอรูปอัพโหลด
+  showToast(`บันทึกแล้ว · ${empNameSnap} · ${logTypeTh}`, 'success');
   isSubmitting = false; updateSubmitBtn();
-  setTimeout(() => { clearEmployee(); retakePhoto(); }, 1800);
+  setTimeout(() => { clearEmployee(); retakePhoto(); clearNote(); }, 1800);
+
+  // แสดง status bar บอกว่ากำลังอัพโหลดรูป (ไม่บล็อก UI)
+  addUploadStatus(logId, empNameSnap, logTypeTh);
 
   // background: อัปเดต GPS + รูปจริง
-  const {lat, lng} = gpsResult;
-  compressImage(photoDataUrl, 320, 240, 0.6)
-    .then(compressed => uploadPhotoToDrive(compressed, `${logId}_${selectedEmp.id}.jpg`))
+  compressImage(photoSnap, 320, 240, 0.6)
+    .then(compressed => uploadPhotoToDrive(compressed, `${logId}_${selectedEmp ? selectedEmp.id : 'emp'}.jpg`))
     .then(r => gasPost({action:'updateLogPhoto', logId, photoUrl: r.viewUrl, lat, lng}))
-    .catch(e => console.warn('Background upload failed:', e));
+    .then(() => updateUploadStatus(logId, 'success', `อัพโหลดรูป ${logTypeTh} สำเร็จ ✓`))
+    .catch(e => {
+      console.warn('Background upload failed:', e);
+      updateUploadStatus(logId, 'fail', `อัพโหลดรูปไม่สำเร็จ — ${e.message || 'ลองใหม่ภายหลัง'}`);
+    });
 }
 
 async function confirmSubmit(){
@@ -1191,7 +1352,7 @@ function openEmpProfile(empId){
 
 // ─────────────────────────────────────────────────────────────
 init();
-window.addEventListener('load',()=>{ setTimeout(startCamera,600); });
+// กล้องและ GPS ถูกเรียกจาก init() แล้ว ไม่ต้องเรียกซ้ำที่นี่
 
 </script>
 </body>
